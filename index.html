@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peta Toko Hijab Kota Palu</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<style>
+:root{--t:#6b4226;--td:#4a2c17;--p:#f3e3c3;--k:#a0522d;--g:#d9c3a0;--i:#3b2a1e}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--i);background:var(--p);display:flex;flex-direction:column}
+header{border-bottom:3px solid #c9a36b}
+header{background:var(--t);color:#fff;padding:10px 16px}header h1{margin:0;font-size:1.1rem}header p{margin:2px 0 0;font-size:.82rem;opacity:.85}
+main{flex:1;display:flex;min-height:0}
+aside{width:340px;display:flex;flex-direction:column;border-right:1px solid var(--g);min-height:0}
+.kon{padding:10px;border-bottom:1px solid var(--g);display:grid;gap:8px}
+input,select{width:100%;padding:9px;font-size:.95rem;border:1px solid var(--g);border-radius:6px;background:#fffaf0;color:var(--i)}
+button:hover{background:var(--td)}button.s:hover{background:#f8ecd3}
+.row{display:flex;gap:8px}
+button{font:inherit;cursor:pointer;border-radius:6px;padding:8px 12px;border:1px solid var(--t);background:var(--t);color:#fff;font-weight:600}
+button.s{background:#fff;color:var(--t)}
+.st{font-size:.82rem;color:#7a6450;min-height:1.2em}
+#daftar{flex:1;overflow-y:auto;margin:0;padding:0;list-style:none}
+.it{padding:10px 12px;border-bottom:1px solid var(--g);cursor:pointer}.it:hover,.it.a{background:#fbf1dc}
+.it b{display:block}.it small{color:#7a6450}.jr{color:var(--t);font-weight:700}
+.lb{font-size:.72rem;padding:1px 8px;border-radius:99px;border:1px solid var(--k);color:var(--k);margin-left:6px}
+#peta{flex:1;min-width:0}
+.pin{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--k);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.pin.a{background:var(--t);width:26px;height:26px}
+.me{width:16px;height:16px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 4px rgba(26,115,232,.3)}
+.pop img{width:100%;max-width:230px;aspect-ratio:4/3;object-fit:cover;background:#eadbc0;border-radius:6px;display:block;margin-bottom:6px;cursor:zoom-in}.pop h3{margin:0 0 4px;font-size:1rem}.pop p{margin:2px 0;font-size:.85rem}
+.pop a.b{display:inline-block;margin:6px 6px 0 0;padding:5px 10px;background:var(--t);color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:.85rem}
+.lg{background:#fffaf0;padding:8px 10px;border-radius:6px;font-size:.8rem;line-height:1.6;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+.lg i{display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:middle;border-radius:3px}
+[hidden]{display:none!important}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:12px}
+.box{background:#fffaf0;border-radius:8px;width:min(1000px,100%);max-height:90vh;display:flex;flex-direction:column}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--g)}
+#rg{padding:8px 14px;font-size:.85rem;border-bottom:1px solid var(--g)}.gl{overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:.8rem}th,td{border-bottom:1px solid var(--g);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--p);position:sticky;top:0}
+@media(max-width:760px){main{flex-direction:column-reverse}aside{width:100%;height:46%;border-right:0;border-top:1px solid var(--g)}#peta{height:54%;flex:none}}
+</style>
+</head>
+<body>
+<header><h1>Peta Toko Hijab Kota Palu</h1><p>Temukan toko hijab terdekat, lihat fotonya, dan buka rutenya.</p></header>
+<main>
+<aside>
+  <div class="kon">
+    <input id="cari" type="search" placeholder="Cari nama toko atau alamat" aria-label="Cari toko">
+    <select id="kec" aria-label="Filter kecamatan"><option value="">Semua kecamatan</option></select>
+    <div class="row"><button id="bLok" type="button">Lokasi saya</button><button id="bRes" type="button" class="s">Reset</button><button id="bTab" type="button" class="s">Tabel data</button></div>
+    <div class="st" id="st" role="status">Memuat data...</div>
+  </div>
+  <ul id="daftar"></ul>
+</aside>
+<div id="peta"></div>
+</main>
+<div id="modal" hidden><div class="box"><div class="hd"><b>Basisdata Toko Hijab Kota Palu</b><button id="tut" type="button" class="s">Tutup</button></div><div id="rg"></div><div class="gl"><table id="tb"></table></div></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+(function(){
+// 1. Peta dasar (canvas supaya ringan untuk data garis yang banyak)
+const PUSAT=[-0.8917,119.8707], $=id=>document.getElementById(id);
+const peta=L.map("peta",{preferCanvas:true}).setView(PUSAT,12);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; Kontributor OpenStreetMap"}).addTo(peta);
+const lKec=L.layerGroup().addTo(peta), lJalur=L.layerGroup().addTo(peta), lToko=L.layerGroup().addTo(peta);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const tel=v=>{const s=String(v??"").replace(/\D/g,"");return s&&s[0]!=="0"?"0"+s:s};
+const harga=v=>v?"Rp "+String(v).replace("-"," - Rp "):"";
+const fid=u=>{const m=String(u||"").match(/\/d\/([^/?]+)/);return m?m[1]:null};
+const nama=(p,ks)=>{for(const k of ks)if(p[k])return p[k];for(const k in p)if(typeof p[k]==="string"&&p[k])return p[k];return ""};
+const st=t=>$("st").textContent=t;
+let data=[],posisi=null,aktif=null,me=null;const mk=new Map();
+
+// 2. Baca file GeoJSON (cek CRS harus derajat / EPSG:4326)
+async function muat(f){
+  const r=await fetch(f);if(!r.ok)throw new Error(f+" tidak ditemukan");const j=await r.json();
+  const c=JSON.stringify(j.features[0].geometry.coordinates).match(/-?\d+\.?\d*/g);
+  if(c&&Math.abs(+c[0])>180)throw new Error(f+" bukan EPSG:4326, ekspor ulang dari QGIS dengan CRS EPSG:4326");
+  return j;
+}
+const haver=(a,b)=>{const R=6371,r=d=>d*Math.PI/180,x=r(b[0]-a[0]),y=r(b[1]-a[1]);
+  const h=Math.sin(x/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+const km=k=>k<1?Math.round(k*1000)+" m":k.toFixed(1)+" km";
+const ikon=a=>L.divIcon({className:"",html:`<div class="pin${a?" a":""}"></div>`,iconSize:a?[26,26]:[20,20],iconAnchor:a?[13,26]:[10,20],popupAnchor:[0,-22]});
+
+window.gf=img=>{const s=JSON.parse(img.dataset.s),n=(+img.dataset.n||0)+1;if(n<s.length){img.dataset.n=n;img.src=s[n]}else img.parentNode.style.display="none"};
+// 3. Popup + hotlink (foto Drive, telepon, WhatsApp, rute)
+function popup(t){
+  const id=fid(t.Link_Foto),no=tel(t.Telepon);
+  const src=["jpg","jpeg","png","webp","JPG","JPEG","PNG"].map(e=>`foto/${t.ID}.${e}`);if(id)src.push(`https://drive.google.com/thumbnail?id=${id}&sz=w600`);
+  return `<div class="pop"><a href="#" onclick="window.open(this.firstElementChild.src,'_blank');return false"><img src="${esc(src[0])}" data-s="${esc(JSON.stringify(src))}" alt="Foto ${esc(t.Nama_Tempat)}" onerror="gf(this)"></a>
+  <h3>${esc(t.Nama_Tempat)}</h3><p><b>Kecamatan:</b> ${esc(t.Kecamatan)}</p><p><b>Alamat:</b> ${esc(t.Alamat)}</p>
+  <p><b>Jam buka:</b> ${esc(t.Jam_Buka)}</p><p><b>Harga:</b> ${esc(harga(t.Kisaran_Harga))}</p>
+  ${no?`<p><b>Telepon:</b> <a href="tel:${no}">${no}</a> &middot; <a href="https://wa.me/62${no.slice(1)}" target="_blank" rel="noopener">WhatsApp</a></p>`:""}
+  <a class="b" href="https://www.google.com/maps/dir/?api=1&destination=${t.Latitude},${t.Longitude}&travelmode=driving" target="_blank" rel="noopener">Rute</a></div>`;
+}
+
+// 4. Tampilkan titik + daftar sesuai filter
+function tampil(fit){
+  const q=$("cari").value.trim().toLowerCase(),kc=$("kec").value;
+  let h=data.filter(t=>(!kc||t.Kecamatan===kc)&&(!q||((t.Nama_Tempat||"")+" "+(t.Alamat||"")).toLowerCase().includes(q)));
+  h=h.map(t=>({...t,d:posisi?haver(posisi,[t.Latitude,t.Longitude]):null}));if(posisi)h.sort((a,b)=>a.d-b.d);
+  lToko.clearLayers();mk.clear();$("daftar").innerHTML="";
+  h.forEach(t=>{
+    const m=L.marker([t.Latitude,t.Longitude],{icon:ikon(t.i===aktif),title:t.Nama_Tempat}).bindPopup(popup(t)).addTo(lToko);
+    m.on("click",()=>pilih(t.i,false));mk.set(t.i,m);
+    const li=document.createElement("li");li.className="it"+(t.i===aktif?" a":"");li.dataset.i=t.i;
+    li.innerHTML=`<b>${esc(t.Nama_Tempat)}<span class="lb">${esc(t.Kecamatan)}</span></b><small>${esc(t.Alamat)}${t.d!=null?` &middot; <span class="jr">${km(t.d)}</span>`:""}</small>`;
+    li.onclick=()=>pilih(t.i,true);$("daftar").appendChild(li);
+  });
+  if(!h.length)$("daftar").innerHTML='<li class="it">Tidak ada toko yang cocok.</li>';
+  st(`${h.length} dari ${data.length} toko`+(posisi?", urut dari terdekat.":"."));
+  if(fit&&h.length){const b=L.latLngBounds(h.map(t=>[t.Latitude,t.Longitude]));if(posisi)b.extend(posisi);peta.fitBounds(b,{padding:[40,40],maxZoom:16})}
+}
+function pilih(i,geser){aktif=i;mk.forEach((m,k)=>m.setIcon(ikon(k===i)));
+  document.querySelectorAll(".it").forEach(l=>l.classList.toggle("a",+l.dataset.i===i));
+  const m=mk.get(i);if(m&&geser){peta.setView(m.getLatLng(),Math.max(peta.getZoom(),16));m.openPopup()}}
+
+// 5. Muat tiga layer: titik, poligon kecamatan, garis jalur
+async function mulai(){
+  try{
+    const g=await muat("toko_hijab.geojson");
+    data=g.features.filter(f=>f.geometry).map((f,i)=>{const [x,y]=f.geometry.coordinates;return {...f.properties,Longitude:x,Latitude:y,i}});
+    [...new Set(data.map(t=>t.Kecamatan).filter(Boolean))].sort().forEach(k=>{const o=document.createElement("option");o.value=o.textContent=k;$("kec").appendChild(o)});
+    tampil(true);
+  }catch(e){st("Gagal memuat titik: "+e.message)}
+  try{
+    const g=await muat("kecamatan_palu.geojson"),w=["#8b5a2b","#a0522d","#c68642","#6b4226","#b5835a","#7b5e3b","#9c6644","#d4a373"];let n=0;
+    const lay=L.geoJSON(g,{style:()=>({color:w[n++%w.length],weight:2,fillOpacity:.15}),onEachFeature:(f,l)=>{
+      const nm=nama(f.properties,["kecamata","Kecamatan","KECAMATAN","NAMOBJ","WADMKC","NAME_3"]);
+      const c=data.filter(t=>String(t.Kecamatan).toLowerCase()===String(nm).toLowerCase()).length;
+      l.bindTooltip(`Kec. ${esc(nm)}: ${c} toko`,{sticky:true})}}).addTo(lKec);lay.bringToBack();
+  }catch(e){console.warn(e);st("Poligon kecamatan gagal: "+e.message)}
+  try{
+    st("Memuat jalur jalan...");const g=await muat("jalur_jalan.geojson");
+    L.geoJSON(g,{style:{color:"#5a3a22",weight:2,opacity:.8},interactive:false}).addTo(lJalur);st("Selesai dimuat.");tampil(false);
+  }catch(e){console.warn(e);st("Garis jalur gagal: "+e.message)}
+}
+
+// 6. Kontrol, legenda, tabel basisdata
+L.control.layers(null,{"Titik toko hijab":lToko,"Garis jalur jalan":lJalur,"Poligon kecamatan":lKec},{collapsed:innerWidth<760}).addTo(peta);
+const lg=L.control({position:"bottomright"});lg.onAdd=()=>{const d=L.DomUtil.create("div","lg");
+  d.innerHTML='<i style="background:#a0522d;border-radius:50%"></i>Titik toko hijab<br><i style="background:#5a3a22;height:4px"></i>Garis jalur jalan<br><i style="background:rgba(139,90,43,.25);border:2px solid #8b5a2b"></i>Poligon kecamatan<br><i style="background:#1a73e8;border-radius:50%"></i>Lokasi saya';return d};lg.addTo(peta);
+$("bLok").onclick=()=>{if(!navigator.geolocation)return st("Browser tidak mendukung lokasi.");st("Mencari lokasimu...");
+  navigator.geolocation.getCurrentPosition(p=>{posisi=[p.coords.latitude,p.coords.longitude];if(me)me.remove();
+    me=L.marker(posisi,{icon:L.divIcon({className:"",html:'<div class="me"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(peta).bindPopup("Lokasi kamu");tampil(true)},
+    ()=>st("Lokasi tidak bisa diambil. Izinkan akses lokasi di browser."),{enableHighAccuracy:true,timeout:10000})};
+$("cari").oninput=()=>tampil(false);$("kec").onchange=()=>tampil(true);
+$("bRes").onclick=()=>{$("cari").value="";$("kec").value="";posisi=null;aktif=null;if(me){me.remove();me=null}peta.closePopup();tampil(true)};
+$("bTab").onclick=()=>{const c={};data.forEach(t=>c[t.Kecamatan]=(c[t.Kecamatan]||0)+1);
+  $("rg").innerHTML="<b>Jumlah toko per kecamatan:</b> "+Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${esc(k)} (${v})`).join(", ");
+  $("tb").innerHTML="<tr><th>ID</th><th>Nama</th><th>Kecamatan</th><th>Alamat</th><th>Telepon</th><th>Jam</th><th>Harga</th><th>Lat</th><th>Lng</th></tr>"+
+    data.map(t=>`<tr><td>${esc(t.ID)}</td><td>${esc(t.Nama_Tempat)}</td><td>${esc(t.Kecamatan)}</td><td>${esc(t.Alamat)}</td><td>${esc(tel(t.Telepon))}</td><td>${esc(t.Jam_Buka)}</td><td>${esc(harga(t.Kisaran_Harga))}</td><td>${t.Latitude}</td><td>${t.Longitude}</td></tr>`).join("");
+  $("modal").hidden=false};
+$("tut").onclick=()=>$("modal").hidden=true;$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").hidden=true};
+mulai();
+})();
+</script>
+</body>
+</html>
