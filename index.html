@@ -38,7 +38,7 @@ button.s{background:#fff;color:var(--t)}
 .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--g)}
 #rg{padding:8px 14px;font-size:.85rem;border-bottom:1px solid var(--g)}.gl{overflow:auto}
 table{border-collapse:collapse;width:100%;font-size:.8rem}th,td{border-bottom:1px solid var(--g);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--p);position:sticky;top:0}
-@media(max-width:760px){main{flex-direction:column-reverse}aside{width:100%;height:46%;border-right:0;border-top:1px solid var(--g)}#peta{height:54%;flex:none}}
+@media(max-width:760px){body.po .lg{display:none}main{flex-direction:column-reverse}aside{width:100%;height:46%;border-right:0;border-top:1px solid var(--g)}#peta{height:54%;flex:none}}
 </style>
 </head>
 <body>
@@ -155,6 +155,7 @@ $("bTab").onclick=()=>{const c={};data.forEach(t=>c[t.Kecamatan]=(c[t.Kecamatan]
     data.map(t=>`<tr><td>${esc(t.ID)}</td><td>${esc(t.Nama_Tempat)}</td><td>${esc(t.Kecamatan)}</td><td>${esc(t.Alamat)}</td><td>${esc(tel(t.Telepon))}</td><td>${esc(t.Jam_Buka)}</td><td>${esc(harga(t.Kisaran_Harga))}</td><td>${t.Latitude}</td><td>${t.Longitude}</td></tr>`).join("");
   $("modal").hidden=false};
 $("tut").onclick=()=>$("modal").hidden=true;$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").hidden=true};
+peta.on("popupopen",()=>document.body.classList.add("po"));peta.on("popupclose",()=>document.body.classList.remove("po"));
 mulai();
 })();
 </script>
